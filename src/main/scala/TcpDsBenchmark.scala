@@ -1,4 +1,4 @@
-import java.io.File
+import java.io.{File, FileWriter}
 import java.util.Properties
 
 import Config._
@@ -18,7 +18,7 @@ object TcpDsBenchmark {
   val EMPTY : String = ""
   val cores: Int = Runtime.getRuntime.availableProcessors
   val logger = Logger(LoggerFactory.getLogger(TcpDsBenchmark.getClass))
-  val parallelismLevel = 1
+  val parallelismLevel = 3
 
   def main(args: Array[String]): Unit = {
 
@@ -106,9 +106,10 @@ object TcpDsBenchmark {
       val timeTakenMs = stop-start
       val timeTakenSeconds = toSeconds(timeTakenMs)
       benchmarkStatistics += List(queryNo.toString, parallelismLevel.toString, timeTakenSeconds.toString)
-
+      appendToCsv(queryNo + ",  " + cores + ",  " + parallelismLevel + ", " + timeTakenSeconds.toString()+ "\n")
       logger.info ("Time taken for Query {} : Milliseconds : {}, Seconds : {}", queryNo, timeTakenMs, timeTakenSeconds )
     }
+    writeToCsv(benchmarkStatistics)
     logger.info("Stopping Apache Spark")
     spark.stop()
   }
@@ -141,12 +142,21 @@ object TcpDsBenchmark {
   }
 
   private def writeToCsv(records : ListBuffer[List[String]]) : Unit = {
-    val file = new File("./benchmark.csv")
+    val file = new File("./benchmarkAll.csv")
     if (!file.exists) {
       file.createNewFile
     }
     val writer = CSVWriter.open(file)
     writer.writeAll(records.toList)
+  }
+  private def appendToCsv(records : String) : Unit = {
+
+
+    val fw = new FileWriter("./benchmark.csv", true)
+    try {
+      fw.write(records)
+    }
+    finally fw.close()
   }
 
   private def isSqlComment(line : String) : Boolean = {
