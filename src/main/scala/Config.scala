@@ -3,9 +3,9 @@
 object Config {
 
     //Global Config
-    val USERNAME : String = "root"
-    val PASSWORD : String = "root"
-    val DB : String = "tpc-ds-db-warehouse-project"
+    val USERNAME : String = "tpcds"
+    val PASSWORD : String = "TPCds2018"
+    val DB : String = "tpcds5gb"
     val URL : String = "jdbc:mysql://localhost:3306/" + DB
 
     //Table names
@@ -37,9 +37,16 @@ object Config {
 
     //Partitioning Keys
     val CATALOG_SALES_PARTITIONING_KEY = "cs_item_sk"
+    val CUSTOMER_PARTITIONING_KEY = "c_customer_sk"
     val CUSTOMER_DEMOGRAPHICS_PARTITIONING_KEY = "cd_demo_sk"
-    val INVENTORY_PARTITIONING_KEY = "inv_item_sk"
+    val CUSTOMER_ADDRESSES_PARTITIONING_KEY = "ca_address_sk"
+    val STORE_RETURNS_PARTITIONING_KEY = "sr_item_sk"
     val STORES_SALES_PARTITIONING_KEY = "ss_item_sk"
-
+    val INVENTORY_PARTITIONING_KEY = "inv_item_sk"
+    val WEB_SALES_PARTITIONING_KEY = "ws_item_sk"
+    val WEB_RETURNS_PARTITIONING_KEY = "wr_item_sk"
+    val DATE_DIM_PARTITIONING_KEY = "d_date_sk"
+    val ITEM_PARTITIONING_KEY = "i_item_sk"
+    val TIME_PARTITIONING_KEY = "t_time_sk"
 
 }

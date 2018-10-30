@@ -17,8 +17,9 @@ object TcpDsBenchmark {
 
   val EMPTY : String = ""
   val cores: Int = Runtime.getRuntime.availableProcessors
+  //val cores: Int = 4
   val logger = Logger(LoggerFactory.getLogger(TcpDsBenchmark.getClass))
-  val parallelismLevel = 3
+  val parallelismLevel = 400
 
   def main(args: Array[String]): Unit = {
 
@@ -38,7 +39,7 @@ object TcpDsBenchmark {
     val callCenterTable = spark.read.jdbc(URL, CALL_CENTER,  mysqlConnProperties)
     val catalogPageTable = spark.read.jdbc(URL, CATALOG_PAGE, mysqlConnProperties)
     val catalogReturnsTable = spark.read.jdbc(URL, CATALOG_RETURNS, mysqlConnProperties)
-    val catalogSalesTable = spark.read.jdbc(URL, CATALOG_SALES, CATALOG_SALES_PARTITIONING_KEY, 10000, 1000000, parallelismLevel , mysqlConnProperties)
+    val catalogSalesTable = spark.read.jdbc(URL, CATALOG_SALES, CATALOG_SALES_PARTITIONING_KEY, 10000, 2000000, parallelismLevel , mysqlConnProperties)
     val customerTable = spark.read.jdbc(URL, CUSTOMER, mysqlConnProperties)
     val dateTimTable = spark.read.jdbc(URL, DATE_DIM, mysqlConnProperties)
     val customAddressTable = spark.read.jdbc(URL, CUSTOMER_ADDRESS, mysqlConnProperties)
@@ -46,19 +47,19 @@ object TcpDsBenchmark {
     val dbGenVersionTable = spark.read.jdbc(URL, DBGEN_VERSION, mysqlConnProperties)
     val houseHoldDemographicsTable = spark.read.jdbc(URL, HOUSEHOLD_DEMOGRAPHICS, mysqlConnProperties)
     val incomeBandTable = spark.read.jdbc(URL, INCOME_BAND, mysqlConnProperties)
-    val inventoryTable = spark.read.jdbc(URL, INVENTORY,INVENTORY_PARTITIONING_KEY, 30000, 100000, parallelismLevel, mysqlConnProperties)
+    val inventoryTable = spark.read.jdbc(URL, INVENTORY,INVENTORY_PARTITIONING_KEY, 10000, 200000, parallelismLevel, mysqlConnProperties)
     val itemTable = spark.read.jdbc(URL, ITEM, mysqlConnProperties)
     val promotionTable = spark.read.jdbc(URL, PROMOTION, mysqlConnProperties)
     val reasonsTable = spark.read.jdbc(URL, REASON, mysqlConnProperties)
     val shipModeTable = spark.read.jdbc(URL, SHIP_MODE, mysqlConnProperties)
     val storeTable = spark.read.jdbc(URL, STORE, mysqlConnProperties)
     val storeReturnsTable = spark.read.jdbc(URL, STORE_RETURNS, mysqlConnProperties)
-    val storesSalesTable = spark.read.jdbc(URL, STORE_SALES, STORES_SALES_PARTITIONING_KEY,  10000, 1000000, parallelismLevel , mysqlConnProperties)
-    val timeDimTable = spark.read.jdbc(URL, TIME_DIM, mysqlConnProperties)
+    val storesSalesTable = spark.read.jdbc(URL, STORE_SALES, STORES_SALES_PARTITIONING_KEY,  10000, 2000000, parallelismLevel , mysqlConnProperties)
+    val timeDimTable = spark.read.jdbc(URL, TIME_DIM, TIME_PARTITIONING_KEY,  10000, 2000000, parallelismLevel , mysqlConnProperties)
     val webPageTable = spark.read.jdbc(URL, WEB_PAGE, mysqlConnProperties)
     val webReturnsTable = spark.read.jdbc(URL, WEB_RETURNS, mysqlConnProperties)
     val warehouseTable = spark.read.jdbc(URL, WAREHOUSE, mysqlConnProperties)
-    val webSalesTable = spark.read.jdbc(URL, WEB_SALES, mysqlConnProperties)
+    val webSalesTable = spark.read.jdbc(URL, WEB_SALES, WEB_SALES_PARTITIONING_KEY, 10000, 2000000, parallelismLevel, mysqlConnProperties)
     val webSiteTable = spark.read.jdbc(URL, WEB_SITE, mysqlConnProperties)
 
     callCenterTable.createOrReplaceTempView(CALL_CENTER)
@@ -93,21 +94,26 @@ object TcpDsBenchmark {
     val benchmarkStatistics =  ListBuffer[List[String]]()
 
     for((index, sqlQueries) <- sqlQueriesMap) {
-      val queryNo = index + 1
-      logger.info ("Executing Query {}", queryNo)
-      val start = System.currentTimeMillis()
-
-      for(sqlQuery <- sqlQueries) {
-        val dataFrame = sparkSqlContext.sql(sqlQuery)
-        dataFrame.show(1000000)
+      val queryNo = index + 21
+      if(queryNo == 1000){
+        logger.info ("Skipping Query {}", queryNo)
       }
+      else{
+        logger.info ("Executing Query {}", queryNo)
+        val start = System.currentTimeMillis()
 
-      val stop = System.currentTimeMillis()
-      val timeTakenMs = stop-start
-      val timeTakenSeconds = toSeconds(timeTakenMs)
-      benchmarkStatistics += List(queryNo.toString, parallelismLevel.toString, timeTakenSeconds.toString)
-      appendToCsv(queryNo + ",  " + cores + ",  " + parallelismLevel + ", " + timeTakenSeconds.toString()+ "\n")
-      logger.info ("Time taken for Query {} : Milliseconds : {}, Seconds : {}", queryNo, timeTakenMs, timeTakenSeconds )
+        for(sqlQuery <- sqlQueries) {
+          val dataFrame = sparkSqlContext.sql(sqlQuery)
+          dataFrame.show(1000000)
+        }
+
+        val stop = System.currentTimeMillis()
+        val timeTakenMs = stop-start
+        val timeTakenSeconds = toSeconds(timeTakenMs)
+        benchmarkStatistics += List(queryNo.toString, parallelismLevel.toString, timeTakenSeconds.toString)
+        appendToCsv(queryNo + ",  " + cores + ",  " + parallelismLevel + ", " + timeTakenSeconds.toString()+ "\n")
+        logger.info ("Time taken for Query {} : Milliseconds : {}, Seconds : {}", queryNo, timeTakenMs, timeTakenSeconds )
+      }
     }
     writeToCsv(benchmarkStatistics)
     logger.info("Stopping Apache Spark")
