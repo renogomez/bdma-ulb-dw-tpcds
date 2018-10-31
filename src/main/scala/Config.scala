@@ -5,7 +5,7 @@ object Config {
     //Global Config
     val USERNAME : String = "tpcds"
     val PASSWORD : String = "TPCds2018"
-    val DB : String = "tpcds5gb"
+    val DB : String = "tpcds"
     val URL : String = "jdbc:mysql://localhost:3306/" + DB
 
     //Table names
